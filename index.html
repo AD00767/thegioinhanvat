@@ -4,543 +4,705 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thế Giới Nhân Vật</title>
-    <!-- Nhúng thư viện Supabase -->
+    <!-- Nhúng Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <style>
         :root {
-            --bg-pink: #fff5f7;
-            --primary-pink: #ffb6c1;
-            --accent-pink: #ff6b81;
-            --dark-pink: #d85268;
+            --bg-main: #fff5f7;
+            --primary-pink: #ff8fa3;
             --light-pink: #ffe6ea;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #666666;
-            --icon-gray: #777777;
-            --border-color: #f0f0f0;
+            --card-pink: #fff0f3;
+            --dark-pink: #ff4d6d;
+            --text-dark: #2b2b2b;
+            --text-muted: #718096;
+            --grey-icon: #8c9ba5;
+            --border-pink: #fbcfe8;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            background-color: var(--bg-pink);
-            color: var(--text-main);
-            padding-bottom: 40px;
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding-bottom: 50px;
         }
 
-        /* HỘP THÔNG BÁO TOAST MÀU HỒNG NHẠT */
-        #toast {
+        /* --- TOAST NOTIFICATION --- */
+        #toast-container {
             position: fixed;
             top: 20px;
             left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background-color: var(--light-pink);
-            color: var(--dark-pink);
-            border: 1px solid var(--primary-pink);
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-weight: 600;
-            font-size: 14px;
-            box-shadow: 0 4px 15px rgba(216, 82, 104, 0.15);
-            z-index: 10000;
-            transition: all 0.4s ease;
-            opacity: 0;
+            transform: translateX(-50%);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             pointer-events: none;
-            text-align: center;
-            max-width: 90%;
-        }
-        #toast.show {
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
         }
 
-        /* HEADER & SEARCH BAR */
+        .toast {
+            background-color: var(--light-pink);
+            color: #b91c1c;
+            border: 1px solid var(--primary-pink);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 4px 15px rgba(255, 143, 163, 0.3);
+            pointer-events: auto;
+            animation: fadeInDown 0.3s ease, fadeOutUp 0.3s ease 2.7s forwards;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.success {
+            color: #9f1239;
+            background-color: #ffe4e6;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOutUp {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(-20px); }
+        }
+
+        /* --- HEADER & SEARCH --- */
         header {
-            padding: 30px 20px 20px;
+            background-color: white;
+            padding: 25px 20px;
             text-align: center;
-            max-width: 800px;
-            margin: 0 auto;
+            border-bottom: 2px solid var(--light-pink);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
         }
 
         h1 {
             color: var(--dark-pink);
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: 26px;
+            margin-bottom: 15px;
+            font-weight: 800;
         }
 
-        .search-box {
-            width: 100%;
+        .search-container {
             max-width: 500px;
-            margin: 0 auto 15px;
+            margin: 0 auto 15px auto;
             position: relative;
         }
 
-        .search-box input {
+        .search-input {
             width: 100%;
             padding: 12px 20px;
             border: 2px solid var(--primary-pink);
             border-radius: 25px;
             outline: none;
-            font-size: 14px;
+            font-size: 15px;
+            background: var(--bg-main);
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
             background: white;
-            color: var(--text-main);
+            box-shadow: 0 0 0 4px rgba(255, 143, 163, 0.2);
         }
 
-        .search-box input:focus {
-            border-color: var(--accent-pink);
-        }
-
+        /* NÚT TẠO CHARACTER NỔI BẬT */
         .btn-create-main {
-            background-color: var(--accent-pink);
+            background: linear-gradient(135deg, #ff8fa3, #ff4d6d);
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 25px;
+            padding: 14px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.3);
-            transition: all 0.2s;
-            display: inline-block;
+            box-shadow: 0 6px 20px rgba(255, 77, 109, 0.35);
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn-create-main:hover {
             transform: translateY(-2px);
-            background-color: var(--dark-pink);
+            box-shadow: 0 8px 25px rgba(255, 77, 109, 0.45);
         }
 
-        /* CARD DISPLAY GRID */
+        .btn-create-main:active {
+            transform: translateY(1px);
+        }
+
+        /* --- GRID CARD NHÂN VẬT --- */
         .character-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 20px;
-            padding: 20px;
+            grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+            gap: 22px;
+            padding: 30px 20px;
             max-width: 1200px;
             margin: 0 auto;
         }
 
         .card {
-            background: var(--card-bg);
+            background: white;
             border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--light-pink);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.25s ease;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
+            height: 480px; /* Cân đối chiều dài chiều rộng */
         }
 
         .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            transform: translateY(-6px);
+            box-shadow: 0 10px 22px rgba(255, 143, 163, 0.2);
+            border-color: var(--primary-pink);
+        }
+
+        .card-img-wrapper {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: var(--light-pink);
         }
 
         .card img {
             width: 100%;
-            height: 240px;
+            height: 100%;
             object-fit: cover;
         }
 
         .card-body {
             padding: 15px;
-            flex-grow: 1;
+            flex: 1;
             display: flex;
             flex-direction: column;
         }
 
         .card-title {
             font-size: 18px;
+            font-weight: 700;
             color: var(--dark-pink);
             margin-bottom: 4px;
-            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-creator {
-            font-size: 12px;
-            color: var(--text-sub);
-            margin-bottom: 8px;
-            font-weight: 500;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 6px;
         }
 
         .card-slogan {
             font-size: 13px;
-            color: var(--text-main);
             font-style: italic;
-            margin-bottom: 12px;
+            color: #4a5568;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
             line-height: 1.3;
         }
 
-        /* HASHTAG PILLS */
+        /* HASHTAG CHIPS */
         .hashtag-container {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            margin-bottom: 12px;
-        }
-
-        .hashtag-pill {
-            background-color: var(--light-pink);
-            color: var(--dark-pink);
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 6px;
-            border: 1px solid #ffd0da;
-            white-space: nowrap;
-        }
-
-        .card-stats {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             margin-top: auto;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-            color: var(--icon-gray);
-            font-size: 12px;
+            max-height: 60px;
+            overflow: hidden;
+        }
+
+        .tag-chip {
+            background-color: var(--card-pink);
+            color: var(--dark-pink);
+            border: 1px solid var(--border-pink);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .card-stats-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 10px;
+            background-color: #fafafa;
+            border-top: 1px solid #f0f0f0;
+            color: var(--grey-icon);
+            font-size: 13px;
+            font-weight: 600;
         }
 
         .stat-item {
             display: flex;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
         }
 
-        .icon-btn {
+        .icon-svg {
+            width: 16px;
+            height: 16px;
+            fill: var(--grey-icon);
+        }
+
+        .btn-icon-only {
             background: none;
             border: none;
             cursor: pointer;
-            color: var(--icon-gray);
+            padding: 4px;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 4px;
             border-radius: 50%;
             transition: background 0.2s;
         }
 
-        .icon-btn:hover {
+        .btn-icon-only:hover {
             background-color: var(--light-pink);
         }
 
-        /* MODAL TOÀN MÀN HÌNH (FULLSCREEN) */
-        .modal-fullscreen {
+        /* --- FULL SCREEN MODALS --- */
+        .fullscreen-modal {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
-            background-color: #ffffff;
-            z-index: 999;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: white;
+            z-index: 1000;
             overflow-y: auto;
         }
 
-        .modal-header {
+        .modal-header-bar {
             position: sticky;
             top: 0;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255,255,255,0.95);
             backdrop-filter: blur(5px);
             padding: 15px 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--light-pink);
             z-index: 10;
         }
 
-        .modal-body {
-            max-width: 700px;
-            margin: 0 auto;
-            padding: 25px 20px 50px;
-            position: relative;
-        }
-
-        .close-icon-btn {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--icon-gray);
-        }
-
-        /* ĐA NĂNG: MENU CHÌA KHÓA */
-        .key-menu-container {
-            position: absolute;
-            top: 20px; right: 20px;
-        }
-
-        .key-btn {
-            background: var(--light-pink);
-            border: 1px solid var(--primary-pink);
-            padding: 8px;
-            border-radius: 50%;
-            cursor: pointer;
+        .modal-title-text {
+            font-size: 20px;
+            font-weight: 700;
             color: var(--dark-pink);
+        }
+
+        .close-fullscreen-btn {
+            background: var(--light-pink);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            color: var(--dark-pink);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .fullscreen-body {
+            max-width: 750px;
+            margin: 0 auto;
+            padding: 30px 20px 80px 20px;
+        }
+
+        /* FORM STYLES */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            outline: none;
+            font-size: 14px;
+            background: #fafafa;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-pink);
+            background: white;
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 90px;
+        }
+
+        /* UPLOAD ANH PREVIEW */
+        .img-preview-box {
+            width: 140px;
+            height: 140px;
+            border-radius: 16px;
+            border: 2px dashed var(--primary-pink);
+            background: var(--card-pink);
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        .admin-dropdown {
-            display: none;
-            position: absolute;
-            right: 0; top: 45px;
-            background: white;
-            border: 1px solid var(--primary-pink);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            border-radius: 10px;
             overflow: hidden;
-            z-index: 20;
-            min-width: 130px;
-        }
-
-        .admin-dropdown button {
-            width: 100%;
-            padding: 10px 15px;
-            border: none;
-            background: none;
-            text-align: left;
-            font-size: 13px;
+            margin-top: 10px;
             cursor: pointer;
-            color: var(--text-main);
+            position: relative;
         }
 
-        .admin-dropdown button:hover {
-            background-color: var(--light-pink);
+        .img-preview-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* CHI TIẾT NHÂN VẬT UI */
-        .detail-avatar {
-            width: 160px;
-            height: 160px;
+        /* HASHTAG INPUT BUILDER */
+        .hashtag-builder {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .btn-add-tag {
+            background: var(--primary-pink);
+            color: white;
+            border: none;
+            padding: 0 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .hashtag-chips-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px;
+            background: var(--card-pink);
+            border-radius: 10px;
+            min-height: 48px;
+        }
+
+        .tag-chip-edit {
+            background: white;
+            color: var(--dark-pink);
+            border: 1px solid var(--primary-pink);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .tag-chip-edit span {
+            cursor: pointer;
+            color: #ef4444;
+            font-weight: bold;
+        }
+
+        /* NÚT ĐĂNG TẢI NỔI BẬT */
+        .btn-submit-large {
+            width: 100%;
+            background: linear-gradient(135deg, #ff8fa3, #ff4d6d);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 800;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 77, 109, 0.35);
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        .btn-submit-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 77, 109, 0.45);
+        }
+
+        /* --- XEM CHI TIẾT CARD CARDS --- */
+        .detail-card {
+            background-color: var(--card-pink);
+            border: 1px solid var(--border-pink);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .detail-avatar-large {
+            width: 150px;
+            height: 150px;
             object-fit: cover;
             border-radius: 50%;
-            margin: 10px auto 15px;
             display: block;
-            border: 4px solid var(--light-pink);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            margin: 0 auto 15px auto;
+            border: 4px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
         }
 
-        .detail-name {
+        .detail-char-name {
             text-align: center;
             font-size: 24px;
+            font-weight: 800;
             color: var(--dark-pink);
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
         .detail-stats-bar {
             display: flex;
             justify-content: center;
             gap: 20px;
-            color: var(--icon-gray);
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-
-        .divider {
-            height: 1px;
-            background-color: var(--border-color);
-            margin: 20px 0;
+            color: var(--grey-icon);
+            font-size: 14px;
+            font-weight: 600;
         }
 
         .detail-section-title {
+            font-size: 12px;
             font-weight: 700;
-            font-size: 14px;
-            color: var(--text-sub);
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
             margin-bottom: 6px;
         }
 
-        .detail-text {
-            font-size: 14px;
+        .detail-section-content {
+            font-size: 15px;
             line-height: 1.6;
-            color: var(--text-main);
+            color: var(--text-dark);
             white-space: pre-line;
-            margin-bottom: 12px;
         }
 
-        /* BỘ 3 NÚT HÀNH ĐỘNG CHI TIẾT */
-        .action-row {
+        /* HÀNG NÚT HÀNH ĐỘNG CHI TIẾT */
+        .detail-action-bar {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 15px;
+            gap: 20px;
             margin: 25px 0;
         }
 
-        .btn-circle-action {
-            width: 45px;
-            height: 45px;
+        .btn-action-circle {
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
-            border: 1px solid var(--border-color);
             background: white;
-            cursor: pointer;
+            border: 1px solid var(--border-pink);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--icon-gray);
+            cursor: pointer;
             transition: all 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
         }
 
-        .btn-circle-action:hover {
-            background-color: var(--light-pink);
+        .btn-action-circle:hover {
+            transform: scale(1.08);
         }
 
-        .btn-circle-action.liked {
-            background-color: var(--light-pink);
-            border-color: var(--primary-pink);
-            color: #ff4757;
+        .btn-action-circle.liked svg {
+            fill: var(--dark-pink) !important;
+            stroke: var(--dark-pink) !important;
         }
 
-        .btn-open-character {
-            background-color: var(--accent-pink);
+        .btn-open-char-large {
+            background: linear-gradient(135deg, #ff8fa3, #ff4d6d);
             color: white;
             border: none;
-            padding: 12px 28px;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 25px;
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 30px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.3);
+            box-shadow: 0 6px 18px rgba(255, 77, 109, 0.35);
             transition: all 0.2s;
         }
 
-        .btn-open-character:hover {
-            background-color: var(--dark-pink);
+        .btn-open-char-large:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 22px rgba(255, 77, 109, 0.45);
         }
 
-        /* FORM TẠO/SỬA UI */
-        .form-group {
-            margin-bottom: 18px;
+        /* KEY MENU DROPDOWN */
+        .key-menu-wrapper {
+            position: relative;
         }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-sub);
-        }
-
-        .form-group input, .form-group select, .form-group textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--primary-pink);
-            border-radius: 8px;
-            outline: none;
-            font-size: 14px;
-            background: #ffffff;
-        }
-
-        .form-group textarea {
-            resize: vertical;
-            min-height: 90px;
-        }
-
-        .img-preview {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-top: 10px;
+        .key-menu-dropdown {
             display: none;
-            border: 2px solid var(--primary-pink);
+            position: absolute;
+            right: 0;
+            top: 45px;
+            background: white;
+            border: 1px solid var(--border-pink);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 150px;
+            overflow: hidden;
+            z-index: 100;
+        }
+
+        .key-menu-item {
+            padding: 12px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .key-menu-item:hover {
+            background: var(--card-pink);
         }
 
         /* BÌNH LUẬN */
-        .comments-container {
-            margin-top: 25px;
+        .comment-box {
+            background: white;
+            border: 1px solid var(--border-pink);
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
         }
 
-        .comment-item {
-            background: var(--bg-pink);
-            padding: 12px;
-            border-radius: 10px;
-            margin-bottom: 10px;
-            font-size: 13px;
-        }
-
-        .reply-item {
+        .comment-reply-box {
             margin-left: 25px;
-            border-left: 2px solid var(--primary-pink);
-            padding-left: 10px;
-            margin-top: 8px;
+            border-left: 3px solid var(--primary-pink);
+            padding-left: 12px;
+            margin-top: 10px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
         }
 
         .comment-author {
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 14px;
             color: var(--dark-pink);
-            margin-bottom: 3px;
         }
 
         .comment-time {
-            font-size: 10px;
-            color: #aaa;
-            margin-left: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
         }
 
-        .reply-trigger-btn {
+        .comment-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+            font-size: 12px;
+        }
+
+        .btn-text-action {
             background: none;
             border: none;
-            color: var(--text-sub);
+            color: var(--text-muted);
             cursor: pointer;
-            font-size: 11px;
-            margin-top: 4px;
-            text-decoration: underline;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-text-action:hover {
+            color: var(--dark-pink);
+        }
+
+        .btn-text-action.liked {
+            color: var(--dark-pink);
         }
     </style>
 </head>
 <body>
 
-    <!-- THÔNG BÁO TOAST MÀU HỒNG NHẠT -->
-    <div id="toast">Thông báo ở đây!</div>
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container"></div>
 
-    <!-- MAIN HEADER -->
+    <!-- HEADER & TRANG CHỦ -->
     <header>
         <h1>Thế Giới Nhân Vật</h1>
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Tìm kiếm theo Tên hoặc Hashtag..." oninput="filterCharacters()">
+        
+        <!-- Thanh Tìm Kiếm -->
+        <div class="search-container">
+            <input type="text" id="searchInput" class="search-input" placeholder="🔍 Tìm theo Tên nhân vật hoặc Hashtag..." oninput="handleSearch()">
         </div>
-        <div>
-            <button class="btn-create-main" onclick="openCreateModal()">+ Tạo Character</button>
-        </div>
+
+        <!-- Nút Tạo Character Nổi Bật -->
+        <button class="btn-create-main" onclick="openCreateModal()">
+            <span>+</span> Tạo Character
+        </button>
     </header>
 
-    <!-- GRID HIỂN THỊ -->
     <main>
         <div class="character-grid" id="character-grid">
-            <p style="text-align: center; grid-column: 1/-1; color: var(--text-sub);">Đang tải nhân vật...</p>
+            <p style="text-align: center; grid-column: 1/-1; color: var(--text-muted);">Đang tải dữ liệu...</p>
         </div>
     </main>
 
-    <!-- MODAL TẠO/SỬA (TOÀN MÀN HÌNH) -->
-    <div id="createModal" class="modal-fullscreen">
-        <div class="modal-header">
-            <h2 id="formTitle" style="color: var(--dark-pink); font-size: 18px;">Tạo Nhân Vật Mới</h2>
-            <button class="close-icon-btn" onclick="closeCreateModal()">&times;</button>
+    <!-- ================= FULLSCREEN MODAL: TẠO / SỬA NHÂN VẬT ================= -->
+    <div id="createModal" class="fullscreen-modal">
+        <div class="modal-header-bar">
+            <span class="modal-title-text" id="formTitle">Tạo Nhân Vật Mới</span>
+            <button class="close-fullscreen-btn" onclick="closeCreateModal()">&times;</button>
         </div>
-        <div class="modal-body">
+
+        <div class="fullscreen-body">
             <form id="characterForm" onsubmit="submitCharacter(event)">
                 <input type="hidden" id="editCharId">
 
+                <!-- Upload Ảnh & Xem Trước -->
                 <div class="form-group">
-                    <label>Tải ảnh Avatar <span id="imgNote" style="color: var(--accent-pink);">*</span></label>
-                    <input type="file" id="avatarFile" accept="image/*" onchange="previewImage(event)">
-                    <img id="avatarPreview" class="img-preview" alt="Xem trước">
+                    <label>Ảnh Avatar *</label>
+                    <input type="file" id="avatarFile" accept="image/*" onchange="previewImage(event)" style="display: none;">
+                    <div class="img-preview-box" onclick="document.getElementById('avatarFile').click()">
+                        <img id="avatarPreviewImg" src="" style="display: none;">
+                        <span id="avatarPreviewPlaceholder" style="font-size: 13px; color: var(--text-muted); text-align: center;">Bấm để chọn ảnh</span>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label>Tên nhân vật *</label>
-                    <input type="text" id="charName" required>
+                    <input type="text" id="charName" class="form-control" placeholder="Nhập tên nhân vật" required>
                 </div>
 
                 <div class="form-group">
                     <label>Giới tính *</label>
-                    <select id="charGender" required>
+                    <select id="charGender" class="form-control" required>
                         <option value="Nam">Nam</option>
                         <option value="Nữ">Nữ</option>
                         <option value="Khác">Khác</option>
@@ -548,160 +710,174 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Mật khẩu quản lý (Để Sửa/Xóa sau này) *</label>
-                    <input type="password" id="charPasskey" required>
+                    <label>Mật khẩu quản lý (để Sửa/Xóa về sau) *</label>
+                    <input type="password" id="charPasskey" class="form-control" placeholder="Nhập mật khẩu tự chọn" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Câu slogan *</label>
-                    <input type="text" id="charSlogan" required>
+                    <label>Câu Slogan *</label>
+                    <input type="text" id="charSlogan" class="form-control" placeholder="Nhập câu slogan ấn tượng" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Tên creator *</label>
-                    <input type="text" id="charAuthor" required>
+                    <label>Tên Creator *</label>
+                    <input type="text" id="charAuthor" class="form-control" placeholder="Tên của bạn" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Creator note (Tùy chọn)</label>
-                    <input type="text" id="charNote">
+                    <label>Creator Note (Tùy chọn)</label>
+                    <input type="text" id="charNote" class="form-control" placeholder="Ghi chú dành cho người chơi">
+                </div>
+
+                <!-- Thêm Hashtag dạng Ô -->
+                <div class="form-group">
+                    <label>Hashtag (Thêm từng ô riêng biệt) *</label>
+                    <div class="hashtag-builder">
+                        <input type="text" id="hashtagInput" class="form-control" placeholder="Ví dụ: Xuyên không, Học đường...">
+                        <button type="button" class="btn-add-tag" onclick="addHashtag()">Thêm</button>
+                    </div>
+                    <div class="hashtag-chips-wrapper" id="hashtagChipsWrapper">
+                        <!-- Các ô Hashtag sẽ render ở đây -->
+                    </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Hashtag (Cách nhau bằng dấu phẩy hoặc khoảng trắng) *</label>
-                    <input type="text" id="charTags" placeholder="Ví dụ: #xuyenkhong, #hocduong" required>
+                    <label>Giới thiệu (Introduce - Tùy chọn)</label>
+                    <textarea id="charIntro" class="form-control" placeholder="Mô tả tóm tắt nhân vật"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Plot (Cốt truyện) *</label>
-                    <textarea id="charPlot" required></textarea>
+                    <label>Cốt truyện (Plot) *</label>
+                    <textarea id="charPlot" class="form-control" placeholder="Bối cảnh và nội dung câu chuyện" required></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Giới thiệu (Tùy chọn)</label>
-                    <textarea id="charIntro"></textarea>
+                    <label>Đoạn mở đầu (Opening section - Tùy chọn)</label>
+                    <textarea id="charOpening" class="form-control" placeholder="Lời thoại hoặc bối cảnh bắt đầu"></textarea>
                 </div>
 
                 <div class="form-group">
-                    <label>Đoạn mở đầu (Tùy chọn)</label>
-                    <textarea id="charOpening"></textarea>
+                    <label>Link Character (URL) *</label>
+                    <input type="url" id="charLink" class="form-control" placeholder="https://..." required>
                 </div>
 
-                <div class="form-group">
-                    <label>Link (URL Character) *</label>
-                    <input type="url" id="charLink" placeholder="https://" required>
-                </div>
-
-                <div style="text-align: center; margin-top: 30px;">
-                    <button type="submit" class="btn-create-main" id="submitBtn">Đăng Tải</button>
-                </div>
+                <button type="submit" class="btn-submit-large" id="submitBtn">ĐĂNG TẢI</button>
             </form>
         </div>
     </div>
 
-    <!-- MODAL XEM CHI TIẾT (TOÀN MÀN HÌNH) -->
-    <div id="detailModal" class="modal-fullscreen">
-        <div class="modal-header">
-            <span style="font-size: 14px; font-weight: 600; color: var(--text-sub);">Chi Tiết Nhân Vật</span>
-            <button class="close-icon-btn" onclick="closeDetailModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <!-- Nút Chìa Khóa Quản Lý -->
-            <div class="key-menu-container">
-                <button class="key-btn" onclick="toggleAdminDropdown(event)" title="Quản lý">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-1.5 1.5L14 9.5a5.5 5.5 0 1 0 3 3l2.5-3.5L21 7v-2h-2z"/></svg>
-                </button>
-                <div class="admin-dropdown" id="adminDropdown">
-                    <button onclick="triggerEdit()">✏️ Chỉnh sửa</button>
-                    <button onclick="triggerDelete()" style="color: red;">🗑️ Xóa</button>
-                </div>
-            </div>
-
-            <!-- Avatar + Tên + Chỉ số -->
-            <img id="detail-avatar" class="detail-avatar" src="" alt="Avatar">
-            <h2 id="detail-name" class="detail-name"></h2>
+    <!-- ================= FULLSCREEN MODAL: CHI TIẾT NHÂN VẬT ================= -->
+    <div id="detailModal" class="fullscreen-modal">
+        <div class="modal-header-bar">
+            <button class="close-fullscreen-btn" onclick="closeDetailModal()">&times;</button>
             
-            <div class="detail-stats-bar">
-                <span title="Lượt xem" style="display:flex; align-items:center; gap:4px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                    <span id="detail-views">0</span>
-                </span>
-                <span title="Lượt thích" style="display:flex; align-items:center; gap:4px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    <span id="detail-likes">0</span>
-                </span>
-                <span title="Bình luận" style="display:flex; align-items:center; gap:4px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                    <span id="detail-comments-count">0</span>
-                </span>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Creator info -->
-            <div style="margin-bottom: 12px;">
-                <span class="detail-section-title">Tác giả: </span>
-                <span id="detail-author" style="font-weight: 600;"></span>
-            </div>
-            <div id="detail-note-box" style="margin-bottom: 12px;">
-                <span class="detail-section-title">Creator Note: </span>
-                <span id="detail-note" class="detail-text"></span>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Hashtags -->
-            <div id="detail-tags-box" class="hashtag-container" style="margin-bottom: 20px;"></div>
-
-            <!-- Giới thiệu / Plot / Mở đầu -->
-            <div id="detail-intro-box">
-                <div class="detail-section-title">Giới thiệu</div>
-                <div id="detail-intro" class="detail-text"></div>
-            </div>
-
-            <div id="detail-plot-box">
-                <div class="detail-section-title">Plot</div>
-                <div id="detail-plot" class="detail-text"></div>
-            </div>
-
-            <div id="detail-opening-box">
-                <div class="detail-section-title">Đoạn mở đầu</div>
-                <div id="detail-opening" class="detail-text"></div>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- BỘ 3 NÚT HÀNH ĐỘNG -->
-            <div class="action-row">
-                <!-- Nút Thích (Chỉ Icon) -->
-                <button class="btn-circle-action" id="likeBtn" onclick="toggleLike()" title="Thích">
-                    <svg id="heartIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                </button>
-
-                <!-- Nút Open Character (Nổi Bật) -->
-                <button class="btn-open-character" onclick="openCharacterLink()">Open Character</button>
-
-                <!-- Nút Chia sẻ (Chỉ Icon) -->
-                <button class="btn-circle-action" onclick="shareCurrentCharacter()" title="Chia sẻ">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                </button>
-            </div>
-
-            <!-- BÌNH LUẬN -->
-            <div class="comments-container">
-                <h3 style="font-size: 16px; color: var(--dark-pink); margin-bottom: 12px;">Bình Luận</h3>
-                <div style="margin-bottom: 15px;">
-                    <input type="text" id="commentAuthor" placeholder="Tên của bạn..." style="margin-bottom: 8px;">
-                    <textarea id="commentText" placeholder="Viết bình luận..."></textarea>
-                    <button class="btn-create-main" style="padding: 8px 18px; font-size: 13px; margin-top: 6px;" onclick="submitComment(null)">Gửi bình luận</button>
+            <!-- Nút Chìa khóa Góc Phải -->
+            <div class="key-menu-wrapper">
+                <button class="btn-icon-only" onclick="toggleKeyMenu(event)" style="font-size: 20px;">🔑</button>
+                <div class="key-menu-dropdown" id="keyMenuDropdown">
+                    <div class="key-menu-item" onclick="openEditModal()">✏️ Chỉnh sửa</div>
+                    <div class="key-menu-item" style="color: #ef4444;" onclick="handleDelete()">🗑️ Xóa</div>
                 </div>
+            </div>
+        </div>
+
+        <div class="fullscreen-body">
+            <!-- Card 1: Avatar, Tên, Chỉ số -->
+            <div class="detail-card">
+                <img id="detail-avatar" class="detail-avatar-large" src="" alt="Avatar">
+                <h2 id="detail-name" class="detail-char-name"></h2>
+                
+                <div class="detail-stats-bar">
+                    <div class="stat-item">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                        <span id="detail-views">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                        <span id="detail-likes">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/></svg>
+                        <span id="detail-comments-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l6.96-4.11c.52.48 1.2.78 1.96.78 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.33 6.82 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.82 0 1.5-.33 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                        <span id="detail-shares">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Creator & Note -->
+            <div class="detail-card">
+                <div class="detail-section-title">CREATOR</div>
+                <div class="detail-section-content" id="detail-author" style="font-weight: 700;"></div>
+                <div id="detail-note-wrapper" style="margin-top: 8px;">
+                    <div class="detail-section-title">CREATOR NOTE</div>
+                    <div class="detail-section-content" id="detail-note" style="font-style: italic; color: var(--text-muted);"></div>
+                </div>
+            </div>
+
+            <!-- Card 3: Hashtags -->
+            <div class="detail-card">
+                <div class="detail-section-title">HASHTAGS</div>
+                <div class="hashtag-container" id="detail-hashtags" style="margin-top: 8px;"></div>
+            </div>
+
+            <!-- Card 4: Giới thiệu -->
+            <div class="detail-card" id="detail-intro-wrapper">
+                <div class="detail-section-title">GIỚI THIỆU</div>
+                <div class="detail-section-content" id="detail-intro"></div>
+            </div>
+
+            <!-- Card 5: Plot -->
+            <div class="detail-card">
+                <div class="detail-section-title">CỐT TRUYỆN (PLOT)</div>
+                <div class="detail-section-content" id="detail-plot"></div>
+            </div>
+
+            <!-- Card 6: Đoạn mở đầu -->
+            <div class="detail-card" id="detail-opening-wrapper">
+                <div class="detail-section-title">ĐOẠN MỞ ĐẦU</div>
+                <div class="detail-section-content" id="detail-opening"></div>
+            </div>
+
+            <!-- Card 7: Thanh nút Hành Động -->
+            <div class="detail-action-bar">
+                <!-- Nút Thích (Trái tim Icon) -->
+                <button class="btn-action-circle" id="btnDetailLike" onclick="toggleLike()">
+                    <svg class="icon-svg" style="width:24px; height:24px; stroke: var(--grey-icon); fill: none; stroke-width: 2;" viewBox="0 0 24 24">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                    </svg>
+                </button>
+
+                <!-- Nút Open Character Nổi Bật -->
+                <button class="btn-open-char-large" onclick="openCharacterLink()">Open Character</button>
+
+                <!-- Nút Chia sẻ (Icon) -->
+                <button class="btn-action-circle" onclick="shareCharacter()">
+                    <svg class="icon-svg" style="width:22px; height:22px;" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l6.96-4.11c.52.48 1.2.78 1.96.78 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.33 6.82 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.82 0 1.5-.33 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+                </button>
+            </div>
+
+            <!-- Card 8: Khung Bình Luận -->
+            <div class="detail-card" style="background: white;">
+                <div class="detail-section-title" style="margin-bottom: 15px;">BÌNH LUẬN</div>
+                
+                <!-- Form nhập bình luận -->
+                <div style="margin-bottom: 20px;">
+                    <input type="text" id="commentAuthorInput" class="form-control" placeholder="Tên hiển thị..." style="margin-bottom: 8px;">
+                    <textarea id="commentTextInput" class="form-control" placeholder="Viết bình luận..."></textarea>
+                    <button class="btn-create-main" style="margin-top: 10px; padding: 10px 20px; font-size: 14px;" onclick="addComment(null)">Gửi bình luận</button>
+                </div>
+
+                <!-- Danh sách bình luận -->
                 <div id="commentsList"></div>
             </div>
         </div>
     </div>
 
     <script>
-        // === SUPABASE CONFIG ===
+        // === KHAI BÁO SUPABASE ===
         const SUPABASE_URL = 'https://vkovlqgnucqhqbwzegxg.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_WFNR-2b2E2EB-1DzNAyRXg_kdaD4cOT';
         
@@ -709,13 +885,17 @@
         
         let allCharacters = [];
         let currentChar = null;
+        let hashtagList = [];
+        let selectedFile = null;
 
-        // HIỂN THỊ TOAST MÀU HỒNG NHẠT
-        function showToast(msg) {
-            const toast = document.getElementById('toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
+        // THÔNG BÁO TOAST HỒNG
+        function showToast(message, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${type === 'success' ? '💖' : '🌸'}</span> ${message}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
         }
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -725,76 +905,71 @@
             const urlParams = new URLSearchParams(window.location.search);
             const charId = urlParams.get('id');
             if (charId) {
-                const { data } = await supabaseClient.from('characters').select('*, comments(id)').eq('id', charId).single();
+                const { data } = await supabaseClient.from('characters').select('*').eq('id', charId).single();
                 if (data) showDetail(data);
             }
 
-            // Đóng admin dropdown khi bấm ra ngoài
-            window.addEventListener('click', () => {
-                document.getElementById('adminDropdown').style.display = 'none';
-            });
+            // Đóng Dropdown khi click ra ngoài
+            window.onclick = function(e) {
+                if (!e.target.matches('.key-menu-wrapper *')) {
+                    document.getElementById('keyMenuDropdown').style.display = 'none';
+                }
+            };
         });
 
-        // XỬ LÝ HASHTAG CHUẨN Ô DẠNG PILL
-        function renderHashtagsHTML(tagsStr) {
-            if(!tagsStr) return '';
-            const tags = tagsStr.split(/[,#\s]+/).filter(t => t.trim().length > 0);
-            return tags.map(t => `<span class="hashtag-pill">#${t}</span>`).join('');
-        }
-
-        // PREVIEW ẢNH TẢI LÊN
-        function previewImage(e) {
-            const file = e.target.files[0];
-            const preview = document.getElementById('avatarPreview');
-            if(file) {
-                preview.src = URL.createObjectURL(file);
-                preview.style.display = 'block';
-            }
-        }
-
-        // TẢI DANH SÁCH CHARACTERS
+        // TẢI DANH SÁCH NHÂN VẬT
         async function loadCharacters() {
             const grid = document.getElementById('character-grid');
-            // Lấy kèm số lượng bình luận
-            const { data, error } = await supabaseClient.from('characters').select('*, comments(id)').order('created_at', { ascending: false });
+            const { data, error } = await supabaseClient.from('characters').select('*').order('created_at', { ascending: false });
 
             if (error || !data) {
-                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Lỗi tải dữ liệu. Kiểm tra kết nối Supabase!</p>';
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1;">Lỗi tải dữ liệu. Kiểm tra Supabase.</p>';
                 return;
             }
 
             allCharacters = data;
-            renderCharacterGrid(allCharacters);
+            renderCharacterCards(allCharacters);
         }
 
-        function renderCharacterGrid(list) {
+        // RENDER DẠNG CARD CÂN ĐỐI
+        function renderCharacterCards(list) {
             const grid = document.getElementById('character-grid');
-            if(list.length === 0) {
-                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-sub);">Không tìm thấy nhân vật nào!</p>';
+            grid.innerHTML = '';
+
+            if (list.length === 0) {
+                grid.innerHTML = '<p style="text-align: center; grid-column: 1/-1; color: var(--text-muted);">Không tìm thấy nhân vật nào!</p>';
                 return;
             }
 
-            grid.innerHTML = '';
             list.forEach(char => {
-                const commentCount = char.comments ? char.comments.length : 0;
+                const tagsArr = char.hashtags ? char.hashtags.split(',').filter(t => t.trim()) : [];
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.onclick = () => showDetail(char);
 
                 card.innerHTML = `
-                    <img src="${char.avatar_url}" alt="${char.name}">
+                    <div class="card-img-wrapper">
+                        <img src="${char.avatar_url}" alt="${char.name}">
+                    </div>
                     <div class="card-body">
                         <div class="card-title">${char.name}</div>
                         <div class="card-creator">Creator: ${char.author}</div>
                         <div class="card-slogan">"${char.slogan}"</div>
-                        <div class="hashtag-container">${renderHashtagsHTML(char.hashtags)}</div>
-                        <div class="card-stats">
-                            <span class="stat-item" title="Xem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> ${char.views || 0}</span>
-                            <span class="stat-item" title="Thích"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ${char.likes || 0}</span>
-                            <span class="stat-item" title="Bình luận"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> ${commentCount}</span>
-                            <button class="icon-btn" onclick="event.stopPropagation(); shareByCharId('${char.id}')" title="Chia sẻ">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                            </button>
+                        <div class="hashtag-container">
+                            ${tagsArr.map(t => `<span class="tag-chip">${t.trim()}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="card-stats-bar">
+                        <div class="stat-item" title="Lượt xem">
+                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+                            <span>${char.views || 0}</span>
+                        </div>
+                        <div class="stat-item" title="Lượt thích">
+                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                            <span>${char.likes || 0}</span>
+                        </div>
+                        <div class="stat-item" title="Chia sẻ" onclick="event.stopPropagation(); shareDirect('${char.id}')">
+                            <svg class="icon-svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l6.96-4.11c.52.48 1.2.78 1.96.78 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.33 6.82 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.82 0 1.5-.33 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
                         </div>
                     </div>
                 `;
@@ -802,21 +977,147 @@
             });
         }
 
-        // LỌC TÌM KIẾM THEO TÊN HOẶC HASHTAG
-        function filterCharacters() {
+        // TÌM KIẾM THEO NAME HOẶC HASHTAG
+        function handleSearch() {
             const query = document.getElementById('searchInput').value.toLowerCase().trim();
             const filtered = allCharacters.filter(c => 
                 c.name.toLowerCase().includes(query) || 
                 (c.hashtags && c.hashtags.toLowerCase().includes(query))
             );
-            renderCharacterGrid(filtered);
+            renderCharacterCards(filtered);
         }
 
-        // HIỂN THỊ CHI TIẾT
+        // XỬ LÝ QUẢN LÝ HASHTAG DẠNG Ô
+        function addHashtag() {
+            const input = document.getElementById('hashtagInput');
+            let val = input.value.trim();
+            if(!val) return;
+            if(!val.startsWith('#')) val = '#' + val;
+
+            if(!hashtagList.includes(val)) {
+                hashtagList.push(val);
+                renderHashtagChips();
+            }
+            input.value = '';
+        }
+
+        function removeHashtag(tag) {
+            hashtagList = hashtagList.filter(t => t !== tag);
+            renderHashtagChips();
+        }
+
+        function renderHashtagChips() {
+            const wrapper = document.getElementById('hashtagChipsWrapper');
+            wrapper.innerHTML = hashtagList.map(t => `
+                <div class="tag-chip-edit">
+                    ${t} <span onclick="removeHashtag('${t}')">&times;</span>
+                </div>
+            `).join('');
+        }
+
+        // XEM TRƯỚC ẢNH UPLOAD
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if(file) {
+                selectedFile = file;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('avatarPreviewImg');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    document.getElementById('avatarPreviewPlaceholder').style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // MỞ/ĐÓNG MODAL TẠO TRANG
+        function openCreateModal() {
+            document.getElementById('formTitle').innerText = "Tạo Nhân Vật Mới";
+            document.getElementById('characterForm').reset();
+            document.getElementById('editCharId').value = "";
+            document.getElementById('avatarPreviewImg').style.display = 'none';
+            document.getElementById('avatarPreviewPlaceholder').style.display = 'block';
+            hashtagList = [];
+            renderHashtagChips();
+            selectedFile = null;
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        // ĐĂNG TẢI HOẶC CẬP NHẬT NHÂN VẬT
+        async function submitCharacter(e) {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.innerText = "ĐANG XỬ LÝ...";
+            btn.disabled = true;
+
+            try {
+                const editId = document.getElementById('editCharId').value;
+                let avatarUrl = currentChar && editId ? currentChar.avatar_url : "";
+
+                if(selectedFile) {
+                    const fileName = `${Date.now()}.${selectedFile.name.split('.').pop()}`;
+                    const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(fileName, selectedFile);
+                    if (uploadError) throw uploadError;
+
+                    const { data: publicUrlData } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
+                    avatarUrl = publicUrlData.publicUrl;
+                } else if(!editId) {
+                    showToast("Vui lòng tải lên ảnh Avatar!");
+                    btn.innerText = "ĐĂNG TẢI";
+                    btn.disabled = false;
+                    return;
+                }
+
+                if(hashtagList.length === 0) {
+                    showToast("Vui lòng thêm ít nhất 1 Hashtag!");
+                    btn.innerText = "ĐĂNG TẢI";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const charData = {
+                    avatar_url: avatarUrl,
+                    name: document.getElementById('charName').value,
+                    gender: document.getElementById('charGender').value,
+                    passkey: document.getElementById('charPasskey').value,
+                    slogan: document.getElementById('charSlogan').value,
+                    author: document.getElementById('charAuthor').value,
+                    note: document.getElementById('charNote').value,
+                    hashtags: hashtagList.join(', '),
+                    plot: document.getElementById('charPlot').value,
+                    introduce: document.getElementById('charIntro').value,
+                    opening: document.getElementById('charOpening').value,
+                    link: document.getElementById('charLink').value
+                };
+
+                if (editId) {
+                    await supabaseClient.from('characters').update(charData).eq('id', editId);
+                    showToast("Cập nhật nhân vật thành công!", "success");
+                } else {
+                    await supabaseClient.from('characters').insert([charData]);
+                    showToast("Tạo nhân vật thành công!", "success");
+                }
+
+                closeCreateModal();
+                loadCharacters();
+            } catch (error) {
+                showToast("Lỗi: " + error.message);
+            } finally {
+                btn.innerText = "ĐĂNG TẢI";
+                btn.disabled = false;
+            }
+        }
+
+        // XEM CHI TIẾT NHÂN VẬT
         async function showDetail(char) {
             currentChar = char;
 
-            // Tăng Lượt Xem ngầm
+            // Tăng Lượt Xem Ngầm
             char.views = (char.views || 0) + 1;
             await supabaseClient.from('characters').update({ views: char.views }).eq('id', char.id);
 
@@ -826,47 +1127,117 @@
             document.getElementById('detail-likes').innerText = char.likes || 0;
             document.getElementById('detail-author').innerText = char.author;
 
-            // Optional note
-            if(char.note && char.note.trim()) {
-                document.getElementById('detail-note').innerText = char.note;
-                document.getElementById('detail-note-box').style.display = 'block';
-            } else {
-                document.getElementById('detail-note-box').style.display = 'none';
+            // Hasthag ô riêng
+            const tagContainer = document.getElementById('detail-hashtags');
+            const tagsArr = char.hashtags ? char.hashtags.split(',').filter(t => t.trim()) : [];
+            tagContainer.innerHTML = tagsArr.map(t => `<span class="tag-chip" style="font-size:13px; padding: 6px 14px;">${t.trim()}</span>`).join('');
+
+            const handleOptional = (elemId, wrapperId, content) => {
+                if(content && content.trim()) {
+                    document.getElementById(elemId).innerText = content;
+                    document.getElementById(wrapperId).style.display = 'block';
+                } else {
+                    document.getElementById(wrapperId).style.display = 'none';
+                }
             }
 
-            // Hashtags
-            document.getElementById('detail-tags-box').innerHTML = renderHashtagsHTML(char.hashtags);
+            handleOptional('detail-note', 'detail-note-wrapper', char.note);
+            handleOptional('detail-intro', 'detail-intro-wrapper', char.introduce);
+            handleOptional('detail-opening', 'detail-opening-wrapper', char.opening);
+            document.getElementById('detail-plot').innerText = char.plot;
 
-            // Intro / Plot / Opening
-            const handleSection = (id, text, boxId) => {
-                if(text && text.trim()) {
-                    document.getElementById(id).innerText = text;
-                    document.getElementById(boxId).style.display = 'block';
-                } else {
-                    document.getElementById(boxId).style.display = 'none';
-                }
-            };
-            handleSection('detail-intro', char.introduce, 'detail-intro-box');
-            handleSection('detail-plot', char.plot, 'detail-plot-box');
-            handleSection('detail-opening', char.opening, 'detail-opening-box');
-
-            // Cập nhật Nút Thích (Nút tim)
-            updateLikeButtonState();
+            // Trạng thái nút Thích
+            const isLiked = localStorage.getItem(`liked_${char.id}`) === 'true';
+            const likeBtn = document.getElementById('btnDetailLike');
+            if(isLiked) likeBtn.classList.add('liked');
+            else likeBtn.classList.remove('liked');
 
             document.getElementById('detailModal').style.display = 'block';
             loadComments(char.id);
         }
 
-        // BỘ NÚT CHÌA KHÓA ADMIN
-        function toggleAdminDropdown(e) {
-            e.stopPropagation();
-            const dd = document.getElementById('adminDropdown');
-            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
         }
 
-        async function triggerEdit() {
+        // BẬT/TẮT ĐỔ MENU CHÌA KHÓA GÓC PHẢI
+        function toggleKeyMenu(e) {
+            e.stopPropagation();
+            const dropdown = document.getElementById('keyMenuDropdown');
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // CHỨC NĂNG THÍCH / BỎ THÍCH (1 LẦN/NGƯỜI)
+        async function toggleLike() {
             if(!currentChar) return;
-            const inputKey = prompt("Nhập mật khẩu quản lý nhân vật để sửa:");
+            const key = `liked_${currentChar.id}`;
+            const isLiked = localStorage.getItem(key) === 'true';
+            const likeBtn = document.getElementById('btnDetailLike');
+
+            if(isLiked) {
+                // Bỏ thích
+                currentChar.likes = Math.max(0, (currentChar.likes || 1) - 1);
+                localStorage.removeItem(key);
+                likeBtn.classList.remove('liked');
+                showToast("Đã bỏ thích nhân vật!", "success");
+            } else {
+                // Thích
+                currentChar.likes = (currentChar.likes || 0) + 1;
+                localStorage.setItem(key, 'true');
+                likeBtn.classList.add('liked');
+                showToast("Đã thích nhân vật!", "success");
+            }
+
+            document.getElementById('detail-likes').innerText = currentChar.likes;
+            await supabaseClient.from('characters').update({ likes: currentChar.likes }).eq('id', currentChar.id);
+            loadCharacters();
+        }
+
+        // CHIA SẺ LINK
+        function shareCharacter() {
+            if(!currentChar) return;
+            shareDirect(currentChar.id);
+        }
+
+        function shareDirect(id) {
+            const shareUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
+            navigator.clipboard.writeText(shareUrl);
+            showToast("Đã sao chép link nhân vật vào bộ nhớ tạm!", "success");
+        }
+
+        function openCharacterLink() {
+            if(currentChar && currentChar.link) window.open(currentChar.link, '_blank');
+        }
+
+        // XÓA NHÂN VẬT (CÓ PASSKEY)
+        async function handleDelete() {
+            document.getElementById('keyMenuDropdown').style.display = 'none';
+            if(!currentChar) return;
+
+            const inputKey = prompt("Nhập mật khẩu quản lý để xóa nhân vật này:");
+            if(!inputKey) return;
+
+            if(inputKey === currentChar.passkey) {
+                if(confirm("Bạn có chắc chắn muốn xóa vĩnh viễn?")) {
+                    const { error } = await supabaseClient.from('characters').delete().eq('id', currentChar.id);
+                    if(error) showToast("Lỗi xóa: " + error.message);
+                    else {
+                        showToast("Xóa nhân vật thành công!", "success");
+                        closeDetailModal();
+                        loadCharacters();
+                    }
+                }
+            } else {
+                showToast("Mật khẩu không chính xác!");
+            }
+        }
+
+        // SỬA NHÂN VẬT (CÓ PASSKEY)
+        function openEditModal() {
+            document.getElementById('keyMenuDropdown').style.display = 'none';
+            if(!currentChar) return;
+
+            const inputKey = prompt("Nhập mật khẩu quản lý để chỉnh sửa:");
             if(inputKey !== currentChar.passkey) {
                 showToast("Mật khẩu không chính xác!");
                 return;
@@ -880,177 +1251,34 @@
             document.getElementById('charSlogan').value = currentChar.slogan;
             document.getElementById('charAuthor').value = currentChar.author;
             document.getElementById('charNote').value = currentChar.note || "";
-            document.getElementById('charTags').value = currentChar.hashtags;
             document.getElementById('charPlot').value = currentChar.plot;
             document.getElementById('charIntro').value = currentChar.introduce || "";
             document.getElementById('charOpening').value = currentChar.opening || "";
             document.getElementById('charLink').value = currentChar.link;
 
-            // Preview ảnh cũ
-            const preview = document.getElementById('avatarPreview');
-            preview.src = currentChar.avatar_url;
-            preview.style.display = 'block';
-            document.getElementById('avatarFile').required = false;
-            document.getElementById('imgNote').innerText = "(Giữ nguyên nếu không chọn ảnh mới)";
+            // Ảnh cũ
+            const imgPreview = document.getElementById('avatarPreviewImg');
+            imgPreview.src = currentChar.avatar_url;
+            imgPreview.style.display = 'block';
+            document.getElementById('avatarPreviewPlaceholder').style.display = 'none';
+
+            // Hashtag cũ
+            hashtagList = currentChar.hashtags ? currentChar.hashtags.split(',').map(t => t.trim()) : [];
+            renderHashtagChips();
 
             closeDetailModal();
             document.getElementById('createModal').style.display = 'block';
         }
 
-        async function triggerDelete() {
-            if(!currentChar) return;
-            const inputKey = prompt("Nhập mật khẩu quản lý nhân vật để xóa:");
-            if(!inputKey) return;
-
-            if(inputKey === currentChar.passkey) {
-                if(confirm("Bạn có chắc chắn muốn xóa nhân vật này?")) {
-                    const { error } = await supabaseClient.from('characters').delete().eq('id', currentChar.id);
-                    if(error) {
-                        showToast("Lỗi xóa: " + error.message);
-                    } else {
-                        showToast("Đã xóa nhân vật thành công!");
-                        closeDetailModal();
-                        loadCharacters();
-                    }
-                }
-            } else {
-                showToast("Mật khẩu không chính xác!");
-            }
-        }
-
-        // QUẢN LÝ NÚT THÍCH (LIKE)
-        function isLikedLocally(id) {
-            return localStorage.getItem('liked_char_' + id) === 'true';
-        }
-
-        function updateLikeButtonState() {
-            const btn = document.getElementById('likeBtn');
-            const heart = document.getElementById('heartIcon');
-            if(currentChar && isLikedLocally(currentChar.id)) {
-                btn.classList.add('liked');
-                heart.setAttribute('fill', '#ff4757');
-                heart.setAttribute('stroke', '#ff4757');
-            } else {
-                btn.classList.remove('liked');
-                heart.setAttribute('fill', 'none');
-                heart.setAttribute('stroke', 'currentColor');
-            }
-        }
-
-        async function toggleLike() {
-            if(!currentChar) return;
-            if(isLikedLocally(currentChar.id)) {
-                showToast("Bạn đã thích nhân vật này rồi!");
-                return;
-            }
-
-            currentChar.likes = (currentChar.likes || 0) + 1;
-            document.getElementById('detail-likes').innerText = currentChar.likes;
-            
-            localStorage.setItem('liked_char_' + currentChar.id, 'true');
-            updateLikeButtonState();
-
-            await supabaseClient.from('characters').update({ likes: currentChar.likes }).eq('id', currentChar.id);
-            showToast("Đã thả tim thành công!");
-            loadCharacters();
-        }
-
-        // NÚT LẬP TỨC MỞ CHARACTER LINK
-        function openCharacterLink() {
-            if(currentChar && currentChar.link) window.open(currentChar.link, '_blank');
-        }
-
-        // NÚT CHIA SẺ
-        function shareCurrentCharacter() {
-            if(currentChar) shareByCharId(currentChar.id);
-        }
-
-        function shareByCharId(id) {
-            const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
-            navigator.clipboard.writeText(url);
-            showToast("Đã sao chép link nhân vật vào bộ nhớ!");
-        }
-
-        // MỞ/ĐÓNG MODAL FORM TẠO
-        function openCreateModal() {
-            document.getElementById('formTitle').innerText = "Tạo Nhân Vật Mới";
-            document.getElementById('characterForm').reset();
-            document.getElementById('editCharId').value = "";
-            document.getElementById('avatarPreview').style.display = 'none';
-            document.getElementById('avatarFile').required = true;
-            document.getElementById('imgNote').innerText = "*";
-            document.getElementById('createModal').style.display = 'block';
-        }
-
-        function closeCreateModal() { document.getElementById('createModal').style.display = 'none'; }
-        function closeDetailModal() { document.getElementById('detailModal').style.display = 'none'; }
-
-        // SUBMIT FORM TẠO/SỬA
-        async function submitCharacter(e) {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            btn.innerText = "Đang xử lý...";
-            btn.disabled = true;
-
-            try {
-                const editId = document.getElementById('editCharId').value;
-                let avatarUrl = currentChar ? currentChar.avatar_url : "";
-
-                const fileInput = document.getElementById('avatarFile');
-                if(fileInput.files.length > 0) {
-                    const file = fileInput.files[0];
-                    const fileName = `${Date.now()}.${file.name.split('.').pop()}`;
-                    const { error: uploadError } = await supabaseClient.storage.from('avatars').upload(fileName, file);
-                    if (uploadError) throw uploadError;
-
-                    const { data: publicUrlData } = supabaseClient.storage.from('avatars').getPublicUrl(fileName);
-                    avatarUrl = publicUrlData.publicUrl;
-                }
-
-                const payload = {
-                    avatar_url: avatarUrl,
-                    name: document.getElementById('charName').value,
-                    gender: document.getElementById('charGender').value,
-                    passkey: document.getElementById('charPasskey').value,
-                    slogan: document.getElementById('charSlogan').value,
-                    author: document.getElementById('charAuthor').value,
-                    note: document.getElementById('charNote').value,
-                    hashtags: document.getElementById('charTags').value,
-                    plot: document.getElementById('charPlot').value,
-                    introduce: document.getElementById('charIntro').value,
-                    opening: document.getElementById('charOpening').value,
-                    link: document.getElementById('charLink').value
-                };
-
-                if (editId) {
-                    await supabaseClient.from('characters').update(payload).eq('id', editId);
-                    showToast("Cập nhật nhân vật thành công!");
-                } else {
-                    await supabaseClient.from('characters').insert([payload]);
-                    showToast("Tạo nhân vật thành công!");
-                }
-
-                closeCreateModal();
-                loadCharacters();
-
-            } catch (err) {
-                showToast("Lỗi: " + err.message);
-            } finally {
-                btn.innerText = "Đăng Tải";
-                btn.disabled = false;
-            }
-        }
-
-        // BÌNH LUẬN & REPLY
+        // === BÌNH LUẬN & REPLY ===
         async function loadComments(charId) {
             const container = document.getElementById('commentsList');
             const { data } = await supabaseClient.from('comments').select('*').eq('character_id', charId).order('created_at', { ascending: true });
 
-            const countEl = document.getElementById('detail-comments-count');
-            countEl.innerText = data ? data.length : 0;
+            document.getElementById('detail-comments-count').innerText = data ? data.length : 0;
 
             if(!data || data.length === 0) {
-                container.innerHTML = '<p style="color:#aaa; font-size:12px;">Chưa có bình luận nào.</p>';
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 13px;">Chưa có bình luận nào. Hãy là người đầu tiên!</p>';
                 return;
             }
 
@@ -1059,56 +1287,68 @@
 
             container.innerHTML = '';
             mainComments.forEach(c => {
-                const item = document.createElement('div');
-                item.className = 'comment-item';
-                item.innerHTML = `
-                    <div class="comment-author">${c.author_name} <span class="comment-time">${new Date(c.created_at).toLocaleDateString('vi-VN')}</span></div>
-                    <div>${c.content}</div>
-                    <button class="reply-trigger-btn" onclick="showReplyBox('${c.id}')">Trả lời</button>
-                    <div id="replyBox-${c.id}"></div>
-                    <div id="repliesGroup-${c.id}"></div>
+                const commentEl = document.createElement('div');
+                commentEl.className = 'comment-box';
+                commentEl.innerHTML = `
+                    <div class="comment-header">
+                        <span class="comment-author">${c.author_name}</span>
+                        <span class="comment-time">${new Date(c.created_at).toLocaleDateString('vi-VN')}</span>
+                    </div>
+                    <p style="font-size:14px; color: var(--text-dark);">${c.content}</p>
+                    <div class="comment-actions">
+                        <button class="btn-text-action" onclick="toggleCommentLike(this)">❤️ Thích</button>
+                        <button class="btn-text-action" onclick="showReplyForm('${c.id}')">↩ Trả lời</button>
+                    </div>
+                    <div id="replyForm-${c.id}"></div>
+                    <div id="repliesContainer-${c.id}"></div>
                 `;
-                container.appendChild(item);
+                container.appendChild(commentEl);
 
                 const childReplies = replies.filter(r => r.parent_id === c.id);
-                const replyContainer = item.querySelector(`#repliesGroup-${c.id}`);
+                const replyContainer = commentEl.querySelector(`#repliesContainer-${c.id}`);
                 childReplies.forEach(r => {
-                    const rEl = document.createElement('div');
-                    rEl.className = 'comment-item reply-item';
-                    rEl.innerHTML = `
-                        <div class="comment-author">${r.author_name} <span class="comment-time">${new Date(r.created_at).toLocaleDateString('vi-VN')}</span></div>
-                        <div>${r.content}</div>
+                    const replyEl = document.createElement('div');
+                    replyEl.className = 'comment-box comment-reply-box';
+                    replyEl.innerHTML = `
+                        <div class="comment-header">
+                            <span class="comment-author">${r.author_name}</span>
+                            <span class="comment-time">${new Date(r.created_at).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                        <p style="font-size:14px; color: var(--text-dark);">${r.content}</p>
+                        <div class="comment-actions">
+                            <button class="btn-text-action" onclick="toggleCommentLike(this)">❤️ Thích</button>
+                        </div>
                     `;
-                    replyContainer.appendChild(rEl);
+                    replyContainer.appendChild(replyEl);
                 });
             });
         }
 
-        function showReplyBox(commentId) {
-            const box = document.getElementById(`replyBox-${commentId}`);
-            box.innerHTML = `
-                <div style="margin-top: 8px;">
-                    <input type="text" id="rAuthor-${commentId}" placeholder="Tên bạn..." style="margin-bottom: 4px;">
-                    <textarea id="rText-${commentId}" placeholder="Viết phản hồi..."></textarea>
-                    <button class="btn-create-main" style="padding: 4px 12px; font-size: 11px; margin-top: 4px;" onclick="submitComment('${commentId}')">Gửi trả lời</button>
+        function showReplyForm(commentId) {
+            const formContainer = document.getElementById(`replyForm-${commentId}`);
+            formContainer.innerHTML = `
+                <div style="margin-top: 10px; padding: 10px; background: var(--card-pink); border-radius: 8px;">
+                    <input type="text" id="replyAuthor-${commentId}" class="form-control" placeholder="Tên hiển thị..." style="margin-bottom: 6px;">
+                    <textarea id="replyText-${commentId}" class="form-control" placeholder="Viết câu trả lời..."></textarea>
+                    <button class="btn-create-main" style="margin-top: 8px; padding: 6px 14px; font-size: 12px;" onclick="addComment('${commentId}')">Gửi trả lời</button>
                 </div>
             `;
         }
 
-        async function submitComment(parentId) {
+        async function addComment(parentId) {
             if(!currentChar) return;
 
             let author = "", text = "";
             if (parentId) {
-                author = document.getElementById(`rAuthor-${parentId}`).value;
-                text = document.getElementById(`rText-${parentId}`).value;
+                author = document.getElementById(`replyAuthor-${parentId}`).value;
+                text = document.getElementById(`replyText-${parentId}`).value;
             } else {
-                author = document.getElementById('commentAuthor').value;
-                text = document.getElementById('commentText').value;
+                author = document.getElementById('commentAuthorInput').value;
+                text = document.getElementById('commentTextInput').value;
             }
 
             if(!author.trim() || !text.trim()) {
-                showToast("Vui lòng điền đủ tên và nội dung!");
+                showToast("Vui lòng nhập đầy đủ Tên và Nội dung bình luận!");
                 return;
             }
 
@@ -1119,14 +1359,23 @@
                 content: text
             }]);
 
+            showToast("Đăng bình luận thành công!", "success");
+
             if(!parentId) {
-                document.getElementById('commentAuthor').value = "";
-                document.getElementById('commentText').value = "";
+                document.getElementById('commentAuthorInput').value = "";
+                document.getElementById('commentTextInput').value = "";
             }
 
-            showToast("Đã gửi bình luận!");
             loadComments(currentChar.id);
-            loadCharacters();
+        }
+
+        function toggleCommentLike(btn) {
+            btn.classList.toggle('liked');
+            if(btn.classList.contains('liked')) {
+                btn.style.color = 'var(--dark-pink)';
+            } else {
+                btn.style.color = 'var(--text-muted)';
+            }
         }
     </script>
 </body>
